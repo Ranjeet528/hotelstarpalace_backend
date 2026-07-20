@@ -6,126 +6,91 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
   try {
-
-    const {
-      name,
-      email,
-      phone,
-      password,
-    } = req.body;
+    const { name, email, phone, password } = req.body;
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({
-        success:false,
-        message:"All fields are required",
+        success: false,
+        message: "All fields are required",
       });
     }
 
-    if(password.length < 8){
+    if (password.length < 8) {
       return res.status(400).json({
-        success:false,
-        message:"Password must be at least 8 characters",
+        success: false,
+        message: "Password must be at least 8 characters",
       });
     }
 
     const emailExist = await User.findOne({
-      email:email.toLowerCase().trim(),
+      email: email.toLowerCase().trim(),
     });
 
-    if(emailExist){
+    if (emailExist) {
       return res.status(409).json({
-        success:false,
-        message:"Email already registered",
+        success: false,
+        message: "Email already registered",
       });
     }
 
     const phoneExist = await User.findOne({
-      phone:phone.trim(),
+      phone: phone.trim(),
     });
 
-    if(phoneExist){
+    if (phoneExist) {
       return res.status(409).json({
-        success:false,
-        message:"Phone already registered",
+        success: false,
+        message: "Phone already registered",
       });
     }
 
     const otp = generateOTP();
-
-    const otpExpire = new Date(
-      Date.now() + 10 * 60 * 1000
-    );
+    const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
 
     const user = await User.create({
-
-      name:name.trim(),
-
-      email:email.toLowerCase().trim(),
-
-      phone:phone.trim(),
-
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      phone: phone.trim(),
       password,
-
       otp,
-
       otpExpire,
-
-      isVerified:false,
-
+      isVerified: false,
     });
 
-    await sendEmail({
-
-      to:user.email,
-
-      subject:"Star Palace Email Verification",
-
-      html:`
-      <div style="font-family:Arial;padding:30px">
-
-        <h2>Welcome to Star Palace</h2>
-
-        <p>Your verification code is</p>
-
-        <h1 style="letter-spacing:5px">
-          ${otp}
-        </h1>
-
-        <p>
-          OTP expires in 10 minutes.
-        </p>
-
-      </div>
-      `
-
-    });
+    // Email fail hone par bhi registration fail nahi hona chahiye
+    let emailSent = true;
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Star Palace Email Verification",
+        html: `
+        <div style="font-family:Arial;padding:30px">
+          <h2>Welcome to Star Palace</h2>
+          <p>Your verification code is</p>
+          <h1 style="letter-spacing:5px">${otp}</h1>
+          <p>OTP expires in 10 minutes.</p>
+        </div>
+        `,
+      });
+    } catch (emailError) {
+      console.log("OTP Email failed to send:", emailError.message);
+      emailSent = false;
+    }
 
     return res.status(201).json({
-
-      success:true,
-
-      message:"Registration successful. OTP sent to your email.",
-
-      email:user.email,
-
+      success: true,
+      message: emailSent
+        ? "Registration successful. OTP sent to your email."
+        : "Registration successful, but OTP email failed to send. Please use resend OTP.",
+      email: user.email,
     });
-
-  }
-
-  catch(error){
-
-    console.log("Register Error:",error);
-
+  } catch (error) {
+    console.log("Register Error:", error);
     return res.status(500).json({
-
-      success:false,
-
-      message:error.message,
-
+      success: false,
+      message: error.message,
     });
-
   }
-
 };
 export const login = async (req, res) => {
   try {
