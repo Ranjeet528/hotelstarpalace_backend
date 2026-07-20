@@ -38,12 +38,13 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      console.log("Request Origin:", origin);
+    origin: (origin, callback) => {
+      console.log("REQUEST ORIGIN:", origin);
 
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log("BLOCKED ORIGIN:", origin);
         callback(new Error("CORS not allowed"));
       }
     },
@@ -55,6 +56,10 @@ app.use(
       "PATCH",
       "DELETE",
       "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
     ],
   })
 );
