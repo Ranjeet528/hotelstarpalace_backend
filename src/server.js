@@ -31,14 +31,10 @@ app.use(
     type: "application/json",
   })
 );
-
-const allowedOrigins = (
-  process.env.FRONTEND_URLS || ""
-)
-  .split(",")
-  .map((url) => url.trim());
-
-console.log("Allowed Origins:", allowedOrigins);
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://hotelstarpalace-com.vercel.app",
+];
 
 app.use(
   cors({
@@ -59,10 +55,6 @@ app.use(
       "PATCH",
       "DELETE",
       "OPTIONS",
-    ],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
     ],
   })
 );
