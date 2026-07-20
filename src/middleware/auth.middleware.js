@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 // ==========================
 export const protect = async (req, res, next) => {
   try {
+    console.log("Cookies:", req.cookies);
 if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is not configured");
 }
