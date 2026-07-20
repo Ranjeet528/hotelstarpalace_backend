@@ -37,6 +37,9 @@ export const getRooms = async (req, res) => {
 ========================= */
 export const createRoom = async (req, res) => {
   try {
+
+      console.log("BODY:", req.body);
+    console.log("FILES:", req.files);
     const images = req.files ? req.files.map((file) => file.path) : [];
 
     const room = await Room.create({
@@ -49,6 +52,7 @@ export const createRoom = async (req, res) => {
       room,
     });
   } catch (error) {
+     console.log("CREATE ROOM ERROR:", error);
     res.status(500).json({
       success: false,
       message: error.message,
